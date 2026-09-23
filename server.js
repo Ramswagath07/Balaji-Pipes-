@@ -1,15 +1,19 @@
-﻿import express from "express";
+import express from "express";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import nodemailer from "nodemailer";
 import multer from "multer";
 import path from "node:path";
+import fs from "node:fs/promises";
+import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import "dotenv/config";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+app.set("trust proxy", 1);
 const PORT = Number(process.env.PORT || 3000);
+const quoteFilesDir = path.join(__dirname, "quote-files");
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: "32kb" }));
@@ -23,7 +27,13 @@ const enquiryLimiter = rateLimit({
 });
 
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, quoteFilesDir),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, `${crypto.randomUUID()}${ext}`);
+    }
+  }),
   limits: { files: 3, fileSize: 10 * 1024 * 1024, fields: 12, fieldSize: 32 * 1024 },
   fileFilter: (_req, file, cb) => {
     const allowed = new Set(["application/pdf", "image/jpeg", "image/png"]);
@@ -32,11 +42,32 @@ const upload = multer({
 });
 
 function validPhone(phone) {
-  return /^(?:\x2B91[\s-]?)?[6-9]\d{9}$/.test(String(phone || "").replace(/[()]/g, "").trim());
+  return /^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(String(phone || "").replace(/[()]/g, "").trim());
 }
 function clean(value, max = 2000) {
   return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, max);
 }
+async function saveUploadedFiles(files = []) {
+  await fs.mkdir(quoteFilesDir, { recursive: true });
+  return files.map(file => ({
+    originalName: file.originalname,
+    filename: file.filename,
+    url: `/quote-files/${encodeURIComponent(file.filename)}`
+  }));
+}
+
+async function cleanupQuoteFiles() {
+  try {
+    const entries = await fs.readdir(quoteFilesDir, { withFileTypes: true });
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    await Promise.all(entries.filter(entry => entry.isFile()).map(async entry => {
+      const full = path.join(quoteFilesDir, entry.name);
+      const stat = await fs.stat(full).catch(() => null);
+      if (stat && stat.mtimeMs < cutoff) await fs.unlink(full).catch(() => {});
+    }));
+  } catch {}
+}
+
 function configuredMail() {
   return Boolean(process.env.ADMIN_EMAIL && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.MAIL_FROM);
 }
@@ -57,6 +88,20 @@ app.post("/api/enquiry", enquiryLimiter, (req, res, next) => {
       timestamp: new Date().toISOString()
     };
 
+    const shareMode = String(req.query.share || req.body?.share || "").toLowerCase() === "whatsapp";
+    const uploadedFiles = await saveUploadedFiles(req.files || []);
+
+    if (shareMode) {
+      return res.json({
+        ok: true,
+        share: true,
+        files: uploadedFiles.map(file => ({
+          name: file.originalName,
+          url: file.url
+        }))
+      });
+    }
+
     if (!configuredMail()) {
       return res.status(503).json({
         ok: false, configured: false,
@@ -74,15 +119,15 @@ app.post("/api/enquiry", enquiryLimiter, (req, res, next) => {
 
       const attachments = (req.files || []).map(file => ({
         filename: file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120),
-        content: file.buffer,
+        path: file.path,
         contentType: file.mimetype
       }));
 
       await transporter.sendMail({
         from: process.env.MAIL_FROM,
         to: process.env.ADMIN_EMAIL,
-        subject: `New website quote enquiry â€” ${payload.name}`,
-        text: `Sri Balaji Pipes & Electricals â€” Website Quote Enquiry
+        subject: `New website quote enquiry — ${payload.name}`,
+        text: `Sri Balaji Pipes & Electricals — Website Quote Enquiry
 
 Name: ${payload.name}
 Shop/Company: ${payload.shopName || "Not specified"}
@@ -106,8 +151,15 @@ Attachments: ${attachments.length}`,
   });
 });
 
+app.use("/quote-files", express.static(quoteFilesDir, {
+  fallthrough: false,
+  index: false,
+  maxAge: "1h"
+}));
+setInterval(cleanupQuoteFiles, 60 * 60 * 1000).unref();
+cleanupQuoteFiles();
+
 app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
 app.get("*", (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
 
 app.listen(PORT, () => console.log(`Sri Balaji website running on http://localhost:${PORT}`));
-

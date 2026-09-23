@@ -23,7 +23,7 @@
       requirementLabel:"Requirement", requirementPlaceholder:"What products do you need?", contactMethodLabel:"Preferred contact", shopLabel:"Shop / Company", shopPlaceholder:"Shop, company or institution",
       locationLabel:"Location", locationPlaceholder:"Town / area", categoryLabel:"Product category", quantityLabel:"Quantity / approximate requirement",
       quantityPlaceholder:"Example: 100 m, 20 nos, 2 HP", uploadLabel:"Upload BOQ / quotation / product photo",
-      uploadHelp:"Up to 3 files. PDF, JPG or PNG. Maximum 10 MB each.", uploadNote:"For WhatsApp/SMS, your message is prepared automatically; attach the selected files in WhatsApp if you want to send the documents with the message.",
+      uploadHelp:"Up to 3 files. PDF, JPG or PNG. Maximum 10 MB each.", uploadNote:"WhatsApp: selected files are uploaded securely and included as download links in your enquiry.",
       catPlumbing:"Plumbing", catElectrical:"Electrical", catLighting:"Lighting", catFans:"Fans", catBath:"Bath Fittings", catSwitches:"Switches & Accessories", catWires:"Wires & Cables", catMotors:"Motors & Pumps", catOther:"Other",
       sendWhatsApp:"WhatsApp Quote", sendSMS:"SMS", smsOption:"SMS", clientEyebrow:"CLIENTS & INSTITUTIONS", clientTitle:"Businesses and institutions we serve",
       clientText:"Selected businesses, shops, schools, clinics and institutions served by Sri Balaji Pipes & Electricals.",
@@ -54,7 +54,7 @@
       requirementLabel:"தேவை", requirementPlaceholder:"எந்த பொருட்கள் தேவை?", contactMethodLabel:"விருப்பமான தொடர்பு", shopLabel:"கடை / நிறுவனம்", shopPlaceholder:"கடை, நிறுவனம் அல்லது நிறுவனத்தின் பெயர்",
       locationLabel:"இடம்", locationPlaceholder:"நகரம் / பகுதி", categoryLabel:"பொருள் வகை", quantityLabel:"அளவு / தேவையின் தோராயம்",
       quantityPlaceholder:"உதாரணம்: 100 மீ, 20 எண்ணிக்கை, 2 HP", uploadLabel:"BOQ / விலைப்புள்ளி / பொருள் புகைப்படம் பதிவேற்றவும்",
-      uploadHelp:"அதிகபட்சம் 3 கோப்புகள். PDF, JPG அல்லது PNG. ஒவ்வொன்றும் அதிகபட்சம் 10 MB.", uploadNote:"WhatsApp/SMS செய்தி தானாக தயாராகும். ஆவணங்களையும் அனுப்ப வேண்டுமெனில் WhatsApp-ல் தேர்ந்தெடுத்த கோப்புகளை இணைக்கவும்.",
+      uploadHelp:"அதிகபட்சம் 3 கோப்புகள். PDF, JPG அல்லது PNG. ஒவ்வொன்றும் அதிகபட்சம் 10 MB.", uploadNote:"WhatsApp: தேர்ந்தெடுத்த கோப்புகள் பாதுகாப்பாக பதிவேற்றப்பட்டு விசாரணையில் பதிவிறக்க இணைப்புகளாக சேர்க்கப்படும்.",
       catPlumbing:"பிளம்பிங்", catElectrical:"மின்சாதனங்கள்", catLighting:"விளக்குகள்", catFans:"மின்விசிறிகள்", catBath:"குளியலறை பொருத்துதல்கள்", catSwitches:"சுவிட்சுகள் மற்றும் உபகரணங்கள்", catWires:"கம்பிகள் மற்றும் கேபிள்கள்", catMotors:"மோட்டார்கள் மற்றும் பம்புகள்", catOther:"மற்றவை",
       sendWhatsApp:"WhatsApp விலைப்புள்ளி", sendSMS:"SMS", smsOption:"SMS", clientEyebrow:"வாடிக்கையாளர்கள் & நிறுவனங்கள்", clientTitle:"நாங்கள் சேவை வழங்கும் நிறுவனங்கள்",
       clientText:"ஸ்ரீ பாலாஜி பைப்ஸ் & எலக்ட்ரிக்கல்ஸ் சேவை வழங்கியுள்ள தேர்ந்தெடுக்கப்பட்ட வணிகங்கள், கடைகள், பள்ளிகள், கிளினிக்குகள் மற்றும் நிறுவனங்கள்.",
@@ -160,11 +160,11 @@
     });
   }
 
-  function quoteText() {
+  function quoteText(fileLinks = []) {
     const form = $("#enquiryForm");
     if (!form) return "";
     const d = Object.fromEntries(new FormData(form).entries());
-    return [
+    const lines = [
       "Sri Balaji Pipes & Electricals — Quote Enquiry",
       `Name: ${d.name || "-"}`,
       `Shop/Company: ${d.shopName || "-"}`,
@@ -173,18 +173,68 @@
       `Category: ${d.category || "-"}`,
       `Quantity: ${d.quantity || "-"}`,
       `Requirement: ${d.requirement || "-"}`,
-      `Preferred contact: ${d.contactMethod || "-"}`,
-      "Documents: Please attach selected PDF/photo files in WhatsApp if required."
-    ].join("\n");
+      `Preferred contact: ${d.contactMethod || "-"}`
+    ];
+    if (fileLinks.length) {
+      lines.push("Documents:");
+      fileLinks.forEach(file => lines.push(`${file.name}: ${new URL(file.url, window.location.origin).href}`));
+      lines.push("Document links are available for download.");
+    } else {
+      lines.push("Documents: None attached");
+    }
+    return lines.join("\n");
+  }
+
+  async function prepareWhatsAppFiles() {
+    const form = $("#enquiryForm");
+    const files = $("#quoteFiles")?.files || [];
+    const data = new FormData(form);
+    data.append("language", lang);
+    data.append("source", "Website Quote WhatsApp");
+    data.append("share", "whatsapp");
+    const response = await fetch("/api/enquiry?share=whatsapp", { method: "POST", body: data });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.ok) throw new Error(result.message || "Upload failed");
+    return Array.isArray(result.files) ? result.files : [];
   }
 
   function setupQuoteSharing() {
     const wa = $("#whatsappQuote");
     const sms = $("#smsQuote");
-    if (wa) wa.addEventListener("click", () => {
+    if (wa) wa.addEventListener("click", async () => {
       const form = $("#enquiryForm");
+      const status = $("#formStatus");
       if (!form || !form.reportValidity()) return;
-      window.open(`https://wa.me/919715626864?text=${encodeURIComponent(quoteText())}`, "_blank", "noopener");
+      const files = $("#quoteFiles")?.files || [];
+      if (files.length > 3 || Array.from(files).some(f => f.size > 10 * 1024 * 1024)) {
+        if (status) {
+          status.textContent = t("uploadHelp");
+          status.className = "form-status error";
+        }
+        return;
+      }
+      const button = wa;
+      button.disabled = true;
+      if (status) {
+        status.textContent = files.length ? t("formSending") : "";
+        status.className = "form-status";
+      }
+      try {
+        const fileLinks = files.length ? await prepareWhatsAppFiles() : [];
+        const text = quoteText(fileLinks);
+        window.open(`https://wa.me/919715626864?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+        if (status) {
+          status.textContent = t("formSuccess");
+          status.className = "form-status success";
+        }
+      } catch (error) {
+        if (status) {
+          status.textContent = error.message || t("formError");
+          status.className = "form-status error";
+        }
+      } finally {
+        button.disabled = false;
+      }
     });
     if (sms) sms.addEventListener("click", () => {
       const form = $("#enquiryForm");
