@@ -74,7 +74,21 @@ window.BALAJI_CONTENT = {
       description: "Motors and pumps for water movement and related applications."
     }
   ],
-  institutions: [
-    "Businesses & Institutions"
+  clients: [
+    "Ramco Cements",
+    "Ramco Mills",
+    "Reliance Smart Bazaar",
+    "GRT Jewellers",
+    "Lalitha Jewellers",
+    "James & Co",
+    "Sathya Mobiles",
+    "Green Trends",
+    "D Mart",
+    "Casa Di Mir School",
+    "Bindhya Clinic",
+    "G.V. Ortho Hospital",
+    "Chitra Hospitals",
+    "OTTO",
+    "Ramraj Cottons"
   ]
 };

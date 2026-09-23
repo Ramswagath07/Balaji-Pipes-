@@ -38,7 +38,7 @@
         <button class="lang-toggle" id="languageToggle" type="button" aria-label="Switch language">
           <span class="lang-en">EN</span><span aria-hidden="true"> / </span><span class="lang-ta">தமிழ்</span>
         </button>
-        <a class="nav-call" href="tel:+919362709000" aria-label="Call Balaji Raja">Call</a>
+        <a class="nav-quote" href="#enquiry" data-i18n="quote">Quote</a><a class="nav-call" href="tel:+919362709000" aria-label="Call Balaji Raja">Call</a>
         <button class="menu-button" id="menuButton" type="button" aria-expanded="false" aria-controls="mobileMenu">
           <span></span><span></span><span></span>
           <span class="sr-only">Menu</span>
@@ -123,51 +123,76 @@
       </div>
     </section>
 
-    <section class="section" id="institutions">
-      <div class="container narrow-section">
+    <section class="section section-soft" id="institutions">
+      <div class="container">
         <div class="section-heading">
-          <p class="eyebrow" data-i18n="institutionEyebrow">BUSINESSES &amp; INSTITUTIONS</p>
-          <h2 data-i18n="institutionTitle">Serving a range of requirements</h2>
-          <p data-i18n="institutionText">We support product enquiries from businesses and institutions. Specific customer relationships are not published here unless confirmed.</p>
+          <p class="eyebrow" data-i18n="clientEyebrow">CLIENTS &amp; INSTITUTIONS</p>
+          <h2 data-i18n="clientTitle">Businesses and institutions we serve</h2>
+          <p data-i18n="clientText">Selected businesses, shops, schools, clinics and institutions served by Sri Balaji Pipes &amp; Electricals.</p>
         </div>
-        <div class="confirmation-note" data-i18n="confirmation">Confirmation pending for specific customer relationships.</div>
+        <div class="client-grid" id="clientGrid"></div>
       </div>
     </section>
 
     <section class="section enquiry-section" id="enquiry">
       <div class="container enquiry-grid">
         <div>
-          <p class="eyebrow" data-i18n="enquiryEyebrow">PRODUCT ENQUIRY</p>
-          <h2 data-i18n="enquiryTitle">Tell us what you need</h2>
-          <p data-i18n="enquiryText">Send a product or project requirement. If online enquiry delivery is unavailable, you can contact us directly by phone or WhatsApp.</p>
+          <p class="eyebrow" data-i18n="enquiryEyebrow">REQUEST A QUOTE</p>
+          <h2 data-i18n="enquiryTitle">Send your requirement — we’ll help you quote</h2>
+          <p data-i18n="enquiryText">Upload a BOQ, quotation, drawing, product photo or handwritten requirement. You can also send the same enquiry directly through WhatsApp or SMS.</p>
+          <div class="quote-points">
+            <span data-i18n="quotePoint1">✓ PDF, JPG and PNG uploads</span>
+            <span data-i18n="quotePoint2">✓ Shop / company name included</span>
+            <span data-i18n="quotePoint3">✓ Quantity and project details</span>
+            <span data-i18n="quotePoint4">✓ WhatsApp &amp; SMS sharing</span>
+          </div>
           <div class="direct-contact">
             <a href="tel:+919362709000"><span data-i18n="ownerLabel">Balaji Raja</span><strong>+91 9362709000</strong></a>
             <a href="tel:+919715626864"><span data-i18n="mdLabel">Abhinav Raju</span><strong>+91 9715626864</strong></a>
           </div>
         </div>
 
-        <form id="enquiryForm" class="enquiry-form" novalidate>
-          <label>
-            <span data-i18n="nameLabel">Name</span>
-            <input name="name" type="text" maxlength="100" autocomplete="name" required data-i18n-placeholder="namePlaceholder" placeholder="Your name">
+        <form id="enquiryForm" class="enquiry-form" enctype="multipart/form-data" novalidate>
+          <div class="form-row">
+            <label><span data-i18n="nameLabel">Name</span><input name="name" type="text" maxlength="100" autocomplete="name" required data-i18n-placeholder="namePlaceholder" placeholder="Your name"></label>
+            <label><span data-i18n="shopLabel">Shop / Company</span><input name="shopName" type="text" maxlength="150" autocomplete="organization" data-i18n-placeholder="shopPlaceholder" placeholder="Shop, company or institution"></label>
+          </div>
+          <div class="form-row">
+            <label><span data-i18n="phoneLabel">Phone / WhatsApp</span><input name="phone" type="tel" maxlength="20" autocomplete="tel" inputmode="tel" required placeholder="+91 9876543210"></label>
+            <label><span data-i18n="locationLabel">Location</span><input name="location" type="text" maxlength="150" autocomplete="address-level2" data-i18n-placeholder="locationPlaceholder" placeholder="Town / area"></label>
+          </div>
+          <div class="form-row">
+            <label><span data-i18n="categoryLabel">Product category</span>
+              <select name="category">
+                <option value="Plumbing" data-i18n="catPlumbing">Plumbing</option>
+                <option value="Electrical" data-i18n="catElectrical">Electrical</option>
+                <option value="Lighting" data-i18n="catLighting">Lighting</option>
+                <option value="Fans" data-i18n="catFans">Fans</option>
+                <option value="Bath Fittings" data-i18n="catBath">Bath Fittings</option>
+                <option value="Switches & Accessories" data-i18n="catSwitches">Switches &amp; Accessories</option>
+                <option value="Wires & Cables" data-i18n="catWires">Wires &amp; Cables</option>
+                <option value="Motors & Pumps" data-i18n="catMotors">Motors &amp; Pumps</option>
+                <option value="Other" data-i18n="catOther">Other</option>
+              </select>
+            </label>
+            <label><span data-i18n="quantityLabel">Quantity / approximate requirement</span><input name="quantity" type="text" maxlength="200" data-i18n-placeholder="quantityPlaceholder" placeholder="Example: 100 m, 20 nos, 2 HP"></label>
+          </div>
+          <label><span data-i18n="requirementLabel">Requirement / product list</span><textarea name="requirement" maxlength="3000" rows="5" required data-i18n-placeholder="requirementPlaceholder" placeholder="Tell us what you need"></textarea></label>
+          <label class="upload-box">
+            <span data-i18n="uploadLabel">Upload BOQ / quotation / product photo</span>
+            <input id="quoteFiles" name="files" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" multiple>
+            <small data-i18n="uploadHelp">Up to 3 files. PDF, JPG or PNG. Maximum 10 MB each.</small>
           </label>
-          <label>
-            <span data-i18n="phoneLabel">Phone</span>
-            <input name="phone" type="tel" maxlength="20" autocomplete="tel" inputmode="tel" required placeholder="+91 9876543210">
+          <label><span data-i18n="contactMethodLabel">Preferred contact</span>
+            <select name="contactMethod"><option value="WhatsApp" data-i18n="whatsappOption">WhatsApp</option><option value="Phone" data-i18n="phoneOption">Phone</option><option value="SMS" data-i18n="smsOption">SMS</option></select>
           </label>
-          <label>
-            <span data-i18n="requirementLabel">Requirement</span>
-            <textarea name="requirement" maxlength="2000" rows="5" required data-i18n-placeholder="requirementPlaceholder" placeholder="What products do you need?"></textarea>
-          </label>
-          <label>
-            <span data-i18n="contactMethodLabel">Preferred contact</span>
-            <select name="contactMethod">
-              <option value="WhatsApp" data-i18n="whatsappOption">WhatsApp</option>
-              <option value="Phone" data-i18n="phoneOption">Phone</option>
-            </select>
-          </label>
-          <button class="btn btn-primary btn-full" type="submit" data-i18n="sendEnquiry">Send Enquiry</button>
+          <div class="quote-actions">
+            <button class="btn btn-primary" type="submit" data-i18n="sendEnquiry">Send Enquiry</button>
+            <button class="btn btn-whatsapp" type="button" id="whatsappQuote" data-i18n="sendWhatsApp">WhatsApp Quote</button>
+            <button class="btn btn-sms" type="button" id="smsQuote" data-i18n="sendSMS">SMS</button>
+          </div>
           <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+          <p class="upload-note" data-i18n="uploadNote">For WhatsApp/SMS, your message is prepared automatically; attach the selected files in WhatsApp if you want to send the documents with the message.</p>
         </form>
       </div>
     </section>
