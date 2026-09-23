@@ -1,39 +1,80 @@
-window.SB_CONTENT = {
+window.BALAJI_CONTENT = {
   business: {
-    name: "Sri Balaji Pipes & Electricals",
+    name: "SRI BALAJI PIPES & ELECTRICALS",
+    shortName: "Sri Balaji",
     address: "666, Tenkasi Rd, Thoppupatti, Rajapalayam, Tamil Nadu 626117",
-    owner: "Balaji Raja",
-    ownerPhone: "+919362709000",
-    managingDirector: "Abhinav Raju",
-    mdPhone: "+919715626864",
-    whatsapp: "+919715626864",
-    instagram: "https://www.instagram.com/balaji_pipes_store/",
     serviceArea: "Rajapalayam and across Virudhunagar District",
-    googleMapsUrl: "", googleReviewUrl: "", googleBusinessProfileUrl: ""
+    phoneOwner: "+91 9362709000",
+    owner: "Balaji Raja",
+    phoneMD: "+91 9715626864",
+    managingDirector: "Abhinav Raju",
+    whatsapp: "https://wa.me/919715626864",
+    instagram: "https://www.instagram.com/balaji_pipes_store/",
+    maps: "https://www.google.com/maps/search/?api=1&query=666%2C%20Tenkasi%20Rd%2C%20Thoppupatti%2C%20Rajapalayam%2C%20Tamil%20Nadu%20626117"
   },
+  brands: [
+    "Finolex", "Polycab", "Havells", "Anchor", "RR Kabel", "Crompton",
+    "V-Guard", "Jaquar", "Hindware", "Astral"
+  ],
   products: [
-    {key:"plumbing", icon:"⌁", title:"Plumbing", items:["Pipes","Fittings","Valves","Water tanks","Plumbing accessories"], keywords:"pipe pipes fitting fittings valve water tank plumbing"},
-    {key:"electrical", icon:"⚡", title:"Electrical", items:["Switches","Sockets","Wires","Cables","Electrical accessories","MCB / distribution accessories where applicable"], keywords:"electrical switch socket wire cable mcb"},
-    {key:"lighting", icon:"◌", title:"Lighting", items:["LED lighting","Lamps","Lighting accessories"], brands:["Philips","Luker","Crompton","GM"], keywords:"light lighting led philips luker crompton gm"},
-    {key:"fans", icon:"◉", title:"Fans", items:["Ceiling fans","Fan accessories"], brands:["Crompton","Atomberg","Orient"], keywords:"fan fans crompton atomberg orient"},
-    {key:"bath", icon:"◇", title:"Bath Fittings", items:["Bath fittings","Bathroom accessories"], brands:["KAG","Watertec"], keywords:"bath bathroom fittings kag watertec"},
-    {key:"switches", icon:"▦", title:"Electrical Switches", items:["Switches","Sockets","Modular accessories"], brands:["Anchor","GM","Vinay","Legrand"], keywords:"switch switches socket anchor gm vinay legrand"},
-    {key:"wires", icon:"≈", title:"Wires & Cables", items:["House wires","Cables","Electrical wiring accessories"], brands:["Finolex","Kundhan","Fybros"], keywords:"wire wires cable cables finolex kundhan fybros"},
-    {key:"motors", icon:"◍", title:"Motors & Pumps", items:["Motors","Pumps","Spare parts","Agricultural pump solutions"], keywords:"motor motors pump pumps spare agriculture agricultural"}
+    {
+      key: "plumbing",
+      name: "Plumbing",
+      ta: "பிளம்பிங்",
+      image: "/images/plumbing.png",
+      description: "Pipes, fittings, valves and plumbing essentials for residential and commercial work."
+    },
+    {
+      key: "electrical",
+      name: "Electrical",
+      ta: "மின் சாதனங்கள்",
+      image: "/images/electrical.png",
+      description: "Electrical essentials for new installations, repairs and everyday requirements."
+    },
+    {
+      key: "lighting",
+      name: "Lighting",
+      ta: "விளக்குகள்",
+      image: "/images/lighting.png",
+      description: "Lighting products for homes, shops, offices and other spaces."
+    },
+    {
+      key: "fans",
+      name: "Fans",
+      ta: "மின்விசிறிகள்",
+      image: "/images/fans.png",
+      description: "Fans and ventilation solutions for residential and commercial spaces."
+    },
+    {
+      key: "bath-fittings",
+      name: "Bath Fittings",
+      ta: "குளியலறை பொருத்துதல்கள்",
+      image: "/images/bath-fittings.png",
+      description: "Bath and sanitary fittings for practical and attractive installations."
+    },
+    {
+      key: "switches",
+      name: "Switches & Accessories",
+      ta: "சுவிட்சுகள் மற்றும் உபகரணங்கள்",
+      image: "/images/switches.png",
+      description: "Switches, sockets and electrical accessories for installations and upgrades."
+    },
+    {
+      key: "wires-cables",
+      name: "Wires & Cables",
+      ta: "கம்பிகள் மற்றும் கேபிள்கள்",
+      image: "/images/wires-cables.png",
+      description: "Wires and cables for residential, commercial and electrical projects."
+    },
+    {
+      key: "motors-pumps",
+      name: "Motors & Pumps",
+      ta: "மோட்டார்கள் மற்றும் பம்புகள்",
+      image: "/images/motors-pumps.png",
+      description: "Motors and pumps for water movement and related applications."
+    }
   ],
-  brands: {
-    "Lighting":["Philips","Luker","Crompton","GM"],
-    "Fans":["Crompton","Atomberg","Orient"],
-    "Bath fittings":["KAG","Watertec"],
-    "Switches":["Anchor","GM","Vinay","Legrand"],
-    "Wires & cables":["Finolex","Kundhan","Fybros"]
-  },
-  clients: [
-    {name:"Ramco Cements", confirmed:false},{name:"Ramco Mills", confirmed:false},{name:"Reliance Smart Bazaar", confirmed:false},
-    {name:"GRT Jewellers", confirmed:false},{name:"Lalitha Jewellers", confirmed:false},{name:"James & Co", confirmed:false},
-    {name:"Sathya Mobiles", confirmed:false},{name:"Green Trends", confirmed:false},{name:"D Mart", confirmed:false},
-    {name:"Casa Di Mir School", confirmed:false},{name:"Bindhya Clinic", confirmed:false},{name:"G.V. Ortho Hospital", confirmed:false},
-    {name:"Chitra Hospitals", confirmed:false},{name:"OTTO", confirmed:false},{name:"Ramraj Cottons", confirmed:false}
-  ],
-  testimonials: []
+  institutions: [
+    "Businesses & Institutions"
+  ]
 };
