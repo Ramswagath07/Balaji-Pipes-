@@ -2,70 +2,7 @@
   "use strict";
 
   const C = window.BALAJI_CONTENT;
-  const translations = {
-    en: {
-      skip:"Skip to content", navHome:"Home", navProducts:"Products", navAbout:"About", navContact:"Contact", navEnquiry:"Product Enquiry", quote:"Quote",
-      eyebrow:"RAJAPALAYAM • VIRUDHUNAGAR DISTRICT", heroTitle:"Pipes, Electricals & Everyday Essentials — All in One Place",
-      heroText:"Trusted local supply for plumbing, electrical, lighting, fans, bath fittings, wires, cables, motors and pumps.",
-      browseProducts:"Browse Products", whatsapp:"WhatsApp Us", serviceArea:"Serving Rajapalayam & across Virudhunagar District",
-      localSupply:"Local Supply", localSupplyText:"Rajapalayam based", wideRange:"Wide Range", wideRangeText:"Plumbing & electrical essentials",
-      serviceReach:"Service Reach", serviceReachText:"Across Virudhunagar District", productsEyebrow:"PRODUCT RANGE",
-      productsTitle:"Products for Home, Shop & Project Needs", productsText:"Explore our major categories. Contact us for availability, specifications and product enquiries.",
-      searchLabel:"Search products", searchPlaceholder:"Search products...", allProducts:"All", noProducts:"No products match your search.",
-      aboutEyebrow:"ABOUT SRI BALAJI", aboutTitle:"A local destination for plumbing & electrical requirements",
-      aboutText:"Sri Balaji Pipes & Electricals is based in Rajapalayam and serves customers across Virudhunagar District with a broad range of plumbing and electrical products.",
-      aboutText2:"For current stock, specifications and project requirements, contact the team directly by phone or WhatsApp.",
-      locationTitle:"Store Location", openMaps:"Open in Google Maps →", institutionEyebrow:"BUSINESSES & INSTITUTIONS",
-      institutionTitle:"Serving a range of requirements", institutionText:"We support product enquiries from businesses and institutions. Specific customer relationships are not published here unless confirmed.",
-      confirmation:"Confirmation pending for specific customer relationships.", enquiryEyebrow:"PRODUCT ENQUIRY", enquiryTitle:"Tell us what you need",
-      enquiryText:"Send a product or project requirement. If online enquiry delivery is unavailable, you can contact us directly by phone or WhatsApp.",
-      ownerLabel:"Balaji Raja", mdLabel:"Abhinav Raju", nameLabel:"Name", namePlaceholder:"Your name", phoneLabel:"Phone",
-      requirementLabel:"Requirement", requirementPlaceholder:"What products do you need?", contactMethodLabel:"Preferred contact", shopLabel:"Shop / Company", shopPlaceholder:"Shop, company or institution",
-      locationLabel:"Location", locationPlaceholder:"Town / area", categoryLabel:"Product category", quantityLabel:"Quantity / approximate requirement",
-      quantityPlaceholder:"Example: 100 m, 20 nos, 2 HP", uploadLabel:"Upload BOQ / quotation / product photo",
-      uploadHelp:"Up to 3 files. PDF, JPG or PNG. Maximum 10 MB each.", uploadNote:"WhatsApp: selected files are uploaded securely and included as download links in your enquiry.",
-      catPlumbing:"Plumbing", catElectrical:"Electrical", catLighting:"Lighting", catFans:"Fans", catBath:"Bath Fittings", catSwitches:"Switches & Accessories", catWires:"Wires & Cables", catMotors:"Motors & Pumps", catOther:"Other",
-      sendWhatsApp:"WhatsApp Quote", sendSMS:"SMS", smsOption:"SMS", clientEyebrow:"CLIENTS & INSTITUTIONS", clientTitle:"Businesses and institutions we serve",
-      clientText:"Selected businesses, shops, schools, clinics and institutions served by Sri Balaji Pipes & Electricals.",
-      quotePoint1:"✓ PDF, JPG and PNG uploads", quotePoint2:"✓ Shop / company name included", quotePoint3:"✓ Quantity and project details", quotePoint4:"✓ WhatsApp & SMS sharing",
-      whatsappOption:"WhatsApp", phoneOption:"Phone", sendEnquiry:"Send Enquiry", contactEyebrow:"CONTACT", contactTitle:"Talk to Sri Balaji",
-      whatsappLabel:"WhatsApp", instagramLabel:"Instagram", footerText:"Plumbing & electrical products in Rajapalayam, serving across Virudhunagar District.",
-      footerVisit:"Visit", footerConnect:"Connect", copyright:"© Sri Balaji Pipes & Electricals. All rights reserved.",
-      formSending:"Sending...", formSuccess:"Thank you. Your enquiry has been sent.", formUnavailable:"Online enquiry is not configured yet. Please call or WhatsApp us directly.",
-      formError:"We couldn't send your enquiry right now. Please call or WhatsApp us directly.", formValidation:"Please enter a valid name, Indian phone number and requirement."
-    },
-    ta: {
-      skip:"உள்ளடக்கத்திற்குச் செல்லவும்", navHome:"முகப்பு", navProducts:"பொருட்கள்", navAbout:"எங்களைப் பற்றி", navContact:"தொடர்பு", navEnquiry:"பொருள் விசாரணை", quote:"விலைப்புள்ளி",
-      eyebrow:"ராஜபாளையம் • விருதுநகர் மாவட்டம்", heroTitle:"குழாய்கள், மின்சாதனங்கள் மற்றும் அன்றாட தேவைகள் — ஒரே இடத்தில்",
-      heroText:"பிளம்பிங், மின்சாதனங்கள், விளக்குகள், மின்விசிறிகள், குளியலறை பொருத்துதல்கள், கம்பிகள், கேபிள்கள், மோட்டார்கள் மற்றும் பம்புகள் கிடைக்கும்.",
-      browseProducts:"பொருட்களைப் பார்க்கவும்", whatsapp:"WhatsApp தொடர்பு", serviceArea:"ராஜபாளையம் மற்றும் விருதுநகர் மாவட்டம் முழுவதும் சேவை",
-      localSupply:"உள்ளூர் விநியோகம்", localSupplyText:"ராஜபாளையம்", wideRange:"பரந்த பொருள் வரிசை", wideRangeText:"பிளம்பிங் மற்றும் மின்சாதனங்கள்",
-      serviceReach:"சேவை பகுதி", serviceReachText:"விருதுநகர் மாவட்டம் முழுவதும்", productsEyebrow:"பொருள் வரிசை",
-      productsTitle:"வீடு, கடை மற்றும் திட்டத் தேவைகளுக்கான பொருட்கள்", productsText:"எங்கள் முக்கிய பொருள் வகைகளைப் பார்க்கவும். இருப்பு, விவரக்குறிப்புகள் மற்றும் விசாரணைகளுக்கு தொடர்பு கொள்ளவும்.",
-      searchLabel:"பொருட்களைத் தேடவும்", searchPlaceholder:"பொருட்களைத் தேடவும்...", allProducts:"அனைத்தும்", noProducts:"உங்கள் தேடலுக்கு பொருத்தமான பொருட்கள் இல்லை.",
-      aboutEyebrow:"ஸ்ரீ பாலாஜி பற்றி", aboutTitle:"பிளம்பிங் மற்றும் மின்சாதனத் தேவைகளுக்கான உள்ளூர் நிலையம்",
-      aboutText:"ஸ்ரீ பாலாஜி பைப்ஸ் & எலக்ட்ரிக்கல்ஸ் ராஜபாளையத்தில் அமைந்துள்ளது. விருதுநகர் மாவட்டம் முழுவதும் பல்வேறு பிளம்பிங் மற்றும் மின்சாதனப் பொருட்களை வழங்குகிறது.",
-      aboutText2:"தற்போதைய இருப்பு, விவரக்குறிப்புகள் மற்றும் திட்டத் தேவைகளுக்கு தொலைபேசி அல்லது WhatsApp மூலம் நேரடியாக தொடர்பு கொள்ளவும்.",
-      locationTitle:"கடை முகவரி", openMaps:"Google Maps-ல் திறக்கவும் →", institutionEyebrow:"வணிகங்கள் & நிறுவனங்கள்",
-      institutionTitle:"பல்வேறு தேவைகளுக்கான சேவை", institutionText:"வணிகங்கள் மற்றும் நிறுவனங்களின் பொருள் விசாரணைகளை நாங்கள் ஏற்கிறோம். உறுதி செய்யப்படாத குறிப்பிட்ட வாடிக்கையாளர் தொடர்புகள் இங்கு வெளியிடப்படவில்லை.",
-      confirmation:"குறிப்பிட்ட வாடிக்கையாளர் தொடர்புகளுக்கான உறுதிப்படுத்தல் நிலுவையில் உள்ளது.", enquiryEyebrow:"பொருள் விசாரணை", enquiryTitle:"உங்களுக்கு தேவையானதை தெரிவிக்கவும்",
-      enquiryText:"பொருள் அல்லது திட்டத் தேவையை அனுப்பவும். ஆன்லைன் விசாரணை சேவை கிடைக்கவில்லை என்றால் தொலைபேசி அல்லது WhatsApp மூலம் தொடர்பு கொள்ளலாம்.",
-      ownerLabel:"பாலாஜி ராஜா", mdLabel:"அபிநவ் ராஜு", nameLabel:"பெயர்", namePlaceholder:"உங்கள் பெயர்", phoneLabel:"தொலைபேசி",
-      requirementLabel:"தேவை", requirementPlaceholder:"எந்த பொருட்கள் தேவை?", contactMethodLabel:"விருப்பமான தொடர்பு", shopLabel:"கடை / நிறுவனம்", shopPlaceholder:"கடை, நிறுவனம் அல்லது நிறுவனத்தின் பெயர்",
-      locationLabel:"இடம்", locationPlaceholder:"நகரம் / பகுதி", categoryLabel:"பொருள் வகை", quantityLabel:"அளவு / தேவையின் தோராயம்",
-      quantityPlaceholder:"உதாரணம்: 100 மீ, 20 எண்ணிக்கை, 2 HP", uploadLabel:"BOQ / விலைப்புள்ளி / பொருள் புகைப்படம் பதிவேற்றவும்",
-      uploadHelp:"அதிகபட்சம் 3 கோப்புகள். PDF, JPG அல்லது PNG. ஒவ்வொன்றும் அதிகபட்சம் 10 MB.", uploadNote:"WhatsApp: தேர்ந்தெடுத்த கோப்புகள் பாதுகாப்பாக பதிவேற்றப்பட்டு விசாரணையில் பதிவிறக்க இணைப்புகளாக சேர்க்கப்படும்.",
-      catPlumbing:"பிளம்பிங்", catElectrical:"மின்சாதனங்கள்", catLighting:"விளக்குகள்", catFans:"மின்விசிறிகள்", catBath:"குளியலறை பொருத்துதல்கள்", catSwitches:"சுவிட்சுகள் மற்றும் உபகரணங்கள்", catWires:"கம்பிகள் மற்றும் கேபிள்கள்", catMotors:"மோட்டார்கள் மற்றும் பம்புகள்", catOther:"மற்றவை",
-      sendWhatsApp:"WhatsApp விலைப்புள்ளி", sendSMS:"SMS", smsOption:"SMS", clientEyebrow:"வாடிக்கையாளர்கள் & நிறுவனங்கள்", clientTitle:"நாங்கள் சேவை வழங்கும் நிறுவனங்கள்",
-      clientText:"ஸ்ரீ பாலாஜி பைப்ஸ் & எலக்ட்ரிக்கல்ஸ் சேவை வழங்கியுள்ள தேர்ந்தெடுக்கப்பட்ட வணிகங்கள், கடைகள், பள்ளிகள், கிளினிக்குகள் மற்றும் நிறுவனங்கள்.",
-      quotePoint1:"✓ PDF, JPG மற்றும் PNG பதிவேற்றம்", quotePoint2:"✓ கடை / நிறுவனப் பெயர் சேர்க்கலாம்", quotePoint3:"✓ அளவு மற்றும் திட்ட விவரங்கள்", quotePoint4:"✓ WhatsApp & SMS பகிர்வு",
-      whatsappOption:"WhatsApp", phoneOption:"தொலைபேசி", sendEnquiry:"விசாரணையை அனுப்பவும்", contactEyebrow:"தொடர்பு", contactTitle:"ஸ்ரீ பாலாஜியைத் தொடர்பு கொள்ளுங்கள்",
-      whatsappLabel:"WhatsApp", instagramLabel:"Instagram", footerText:"ராஜபாளையத்தில் பிளம்பிங் மற்றும் மின்சாதனப் பொருட்கள்; விருதுநகர் மாவட்டம் முழுவதும் சேவை.",
-      footerVisit:"வருகை", footerConnect:"தொடர்பு", copyright:"© ஸ்ரீ பாலாஜி பைப்ஸ் & எலக்ட்ரிக்கல்ஸ். அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.",
-      formSending:"அனுப்பப்படுகிறது...", formSuccess:"நன்றி. உங்கள் விசாரணை அனுப்பப்பட்டது.", formUnavailable:"ஆன்லைன் விசாரணை சேவை இன்னும் அமைக்கப்படவில்லை. தொலைபேசி அல்லது WhatsApp மூலம் தொடர்பு கொள்ளவும்.",
-      formError:"இப்போது உங்கள் விசாரணையை அனுப்ப முடியவில்லை. தொலைபேசி அல்லது WhatsApp மூலம் தொடர்பு கொள்ளவும்.", formValidation:"சரியான பெயர், இந்திய தொலைபேசி எண் மற்றும் தேவையை உள்ளிடவும்."
-    }
-  };
+  const translations = C.translations;
 
   let lang = localStorage.getItem("balaji-language") === "ta" ? "ta" : "en";
   let query = "";
@@ -78,9 +15,9 @@
     document.documentElement.lang = lang === "ta" ? "ta" : "en";
     $$("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
     $$("[data-i18n-placeholder]").forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
-    document.title = lang === "ta" ? "ஸ்ரீ பாலாஜி பைப்ஸ் & எலக்ட்ரிக்கல்ஸ் | ராஜபாளையம்" : "Sri Balaji Pipes & Electricals | Rajapalayam";
+    document.title = lang === "ta" ? "à®¸à¯à®°à¯€ à®ªà®¾à®²à®¾à®œà®¿ à®ªà¯ˆà®ªà¯à®¸à¯ & à®Žà®²à®•à¯à®Ÿà¯à®°à®¿à®•à¯à®•à®²à¯à®¸à¯ | à®°à®¾à®œà®ªà®¾à®³à¯ˆà®¯à®®à¯" : "Sri Balaji Pipes & Electricals | Rajapalayam";
     const toggle = $("#languageToggle");
-    if (toggle) toggle.setAttribute("aria-label", lang === "en" ? "தமிழில் மாற்றவும்" : "Switch to English");
+    if (toggle) toggle.setAttribute("aria-label", lang === "en" ? "à®¤à®®à®¿à®´à®¿à®²à¯ à®®à®¾à®±à¯à®±à®µà¯à®®à¯" : "Switch to English");
     renderProducts();
     renderClients();
   }
@@ -155,7 +92,7 @@
       const form = $("#enquiryForm");
       if (!form) return;
       const requirement = form.elements.requirement;
-      requirement.value = `${link.dataset.product} — `;
+      requirement.value = `${link.dataset.product} â€” `;
       setTimeout(() => requirement.focus(), 50);
     });
   }
@@ -165,7 +102,7 @@
     if (!form) return "";
     const d = Object.fromEntries(new FormData(form).entries());
     const lines = [
-      "Sri Balaji Pipes & Electricals — Quote Enquiry",
+      "Sri Balaji Pipes & Electricals â€” Quote Enquiry",
       `Name: ${d.name || "-"}`,
       `Shop/Company: ${d.shopName || "-"}`,
       `Phone: ${d.phone || "-"}`,
@@ -321,4 +258,83 @@
   setupQuoteSharing();
   setupSchema();
   applyTranslations();
+})();
+
+
+/* Native PDF file sharing */
+(function setupDirectPdfShare() {
+  function install() {
+    const wa = document.querySelector("#whatsappQuote");
+    const fileInput = document.querySelector("#quoteFiles");
+
+    if (!wa || !fileInput) {
+      console.warn("Direct PDF sharing: quote controls not found.");
+      return;
+    }
+
+    if (document.querySelector("#directPdfShare")) return;
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.id = "directPdfShare";
+    button.className = wa.className;
+    button.textContent = "📎 Share PDF Directly";
+    button.title = "Share the selected PDF as an actual file";
+
+    wa.insertAdjacentElement("afterend", button);
+
+    button.addEventListener("click", async () => {
+      const files = Array.from(fileInput.files || []);
+
+      if (!files.length) {
+        alert("Please select a PDF or document first.");
+        fileInput.click();
+        return;
+      }
+
+      const shareFiles = files.filter(file =>
+        /^(application\/pdf|image\/(jpeg|jpg|png))$/i.test(file.type)
+      );
+
+      if (!shareFiles.length) {
+        alert("Please select a PDF, JPG, JPEG, or PNG file.");
+        return;
+      }
+
+      const shareData = {
+        title: "Sri Balaji Pipes & Electricals — Quote",
+        text: "Quote enquiry from Sri Balaji Pipes & Electricals.",
+        files: shareFiles
+      };
+
+      try {
+        if (
+          !navigator.share ||
+          !navigator.canShare ||
+          !navigator.canShare({ files: shareFiles })
+        ) {
+          alert(
+            "Direct file sharing is not supported by this browser. " +
+            "Please use WhatsApp Quote or download the PDF instead."
+          );
+          return;
+        }
+
+        await navigator.share(shareData);
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          return;
+        }
+
+        console.error("Direct PDF sharing failed:", error);
+        alert("The file could not be shared. Please try again.");
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", install);
+  } else {
+    install();
+  }
 })();

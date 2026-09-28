@@ -3,163 +3,479 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import nodemailer from "nodemailer";
 import multer from "multer";
-import path from "node:path";
-import fs from "node:fs/promises";
-import crypto from "node:crypto";
-import { fileURLToPath } from "node:url";
-import "dotenv/config";
+import path from "path";
+import fs from "fs/promises";
+import { fileURLToPath } from "url";
+import { randomUUID } from "crypto";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-app.set("trust proxy", 1);
-const PORT = Number(process.env.PORT || 3000);
+const PORT = Number(process.env.PORT) || 3000;
+
+const publicDir = path.join(__dirname, "public");
 const quoteFilesDir = path.join(__dirname, "quote-files");
 
-app.use(helmet({ contentSecurityPolicy: false }));
-app.use(express.json({ limit: "32kb" }));
-app.use(express.urlencoded({ extended: false, limit: "32kb" }));
+// -----------------------------------------------------------------------------
+// Security
+// -----------------------------------------------------------------------------
 
-const enquiryLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false
-});
+app.disable("x-powered-by");
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  })
+);
+
+app.use(
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 100,
+    standardHeaders: "draft-7",
+    legacyHeaders: false
+  })
+);
+
+app.use(express.json({ limit: "100kb" }));
+app.use(express.urlencoded({ extended: true, limit: "100kb" }));
+
+// -----------------------------------------------------------------------------
+// Upload configuration
+// -----------------------------------------------------------------------------
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILES = 3;
+
+const allowedMimeTypes = new Set([
+  "application/pdf",
+  "image/jpeg",
+  "image/png"
+]);
+
+const allowedExtensions = new Set([
+  ".pdf",
+  ".jpg",
+  ".jpeg",
+  ".png"
+]);
+
+const storage = multer.memoryStorage();
 
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => cb(null, quoteFilesDir),
-    filename: (_req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase();
-      cb(null, `${crypto.randomUUID()}${ext}`);
-    }
-  }),
-  limits: { files: 3, fileSize: 10 * 1024 * 1024, fields: 12, fieldSize: 32 * 1024 },
+  storage,
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+    files: MAX_FILES
+  },
+
   fileFilter: (_req, file, cb) => {
-    const allowed = new Set(["application/pdf", "image/jpeg", "image/png"]);
-    cb(null, allowed.has(file.mimetype));
+    const extension = path
+      .extname(file.originalname || "")
+      .toLowerCase();
+
+    /*
+     * Some Windows/browser/curl combinations do not provide the expected
+     * MIME type even when the selected file is a valid PDF/JPG/PNG.
+     *
+     * Therefore we accept the file when either:
+     *   1. its MIME type is explicitly allowed, OR
+     *   2. its filename extension is explicitly allowed.
+     *
+     * This does NOT allow arbitrary file types.
+     */
+    const validMime = allowedMimeTypes.has(file.mimetype);
+    const validExtension = allowedExtensions.has(extension);
+
+    cb(null, validMime || validExtension);
   }
 });
 
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
+
+function clean(value, maxLength = 3000) {
+  if (typeof value !== "string") return "";
+
+  return value
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLength);
+}
+
 function validPhone(phone) {
-  return /^(?:\+91[\s-]?)?[6-9]\d{9}$/.test(String(phone || "").replace(/[()]/g, "").trim());
+  return /^(?:\x2B91[\s-]?)?[6-9]\d{9}$/.test(
+    String(phone || "")
+      .replace(/[()]/g, "")
+      .trim()
+  );
 }
-function clean(value, max = 2000) {
-  return String(value ?? "").trim().replace(/[<>]/g, "").slice(0, max);
+
+function safeFileName(originalName) {
+  const extension = path.extname(originalName || "").toLowerCase();
+
+  const safeExtension = allowedExtensions.has(extension)
+    ? extension
+    : "";
+
+  return `${Date.now()}-${randomUUID()}${safeExtension}`;
 }
+
 async function saveUploadedFiles(files = []) {
-  await fs.mkdir(quoteFilesDir, { recursive: true });
-  return files.map(file => ({
-    originalName: file.originalname,
-    filename: file.filename,
-    url: `/quote-files/${encodeURIComponent(file.filename)}`
-  }));
-}
+  if (!files.length) {
+    return [];
+  }
 
-async function cleanupQuoteFiles() {
-  try {
-    const entries = await fs.readdir(quoteFilesDir, { withFileTypes: true });
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    await Promise.all(entries.filter(entry => entry.isFile()).map(async entry => {
-      const full = path.join(quoteFilesDir, entry.name);
-      const stat = await fs.stat(full).catch(() => null);
-      if (stat && stat.mtimeMs < cutoff) await fs.unlink(full).catch(() => {});
-    }));
-  } catch {}
-}
+  await fs.mkdir(quoteFilesDir, {
+    recursive: true
+  });
 
-function configuredMail() {
-  return Boolean(process.env.ADMIN_EMAIL && process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.MAIL_FROM);
-}
+  const savedFiles = [];
 
-app.post("/api/enquiry", enquiryLimiter, (req, res, next) => {
-  upload.array("files", 3)(req, res, async (err) => {
-    if (err) return res.status(400).json({ ok: false, message: "Please use PDF, JPG or PNG files up to 10 MB each, with a maximum of 3 files." });
-    const { name, phone, requirement, contactMethod, language, source, shopName, location, category, quantity } = req.body || {};
-    if (!clean(name, 100) || !validPhone(phone) || !clean(requirement, 3000)) {
-      return res.status(400).json({ ok: false, message: "Please enter a valid name, Indian phone number and requirement." });
+  for (const file of files) {
+    const filename = safeFileName(file.originalname);
+
+    if (!filename) {
+      continue;
     }
 
-    const payload = {
-      name: clean(name, 100), shopName: clean(shopName, 150), phone: clean(phone, 30),
-      location: clean(location, 150), category: clean(category, 80), quantity: clean(quantity, 200),
-      requirement: clean(requirement, 3000), contactMethod: clean(contactMethod, 30) || "Not specified",
-      language: language === "ta" ? "Tamil" : "English", source: clean(source, 120) || "Website",
-      timestamp: new Date().toISOString()
-    };
+    const destination = path.join(
+      quoteFilesDir,
+      filename
+    );
 
-    const shareMode = String(req.query.share || req.body?.share || "").toLowerCase() === "whatsapp";
-    const uploadedFiles = await saveUploadedFiles(req.files || []);
+    await fs.writeFile(
+      destination,
+      file.buffer
+    );
 
-    if (shareMode) {
-      return res.json({
-        ok: true,
-        share: true,
-        files: uploadedFiles.map(file => ({
-          name: file.originalName,
-          url: file.url
-        }))
-      });
+    savedFiles.push({
+      name: clean(file.originalname, 200),
+      filename,
+      url: `/quote-files/${encodeURIComponent(filename)}`,
+      contentType: file.mimetype,
+      size: file.size
+    });
+  }
+
+  return savedFiles;
+}
+
+function getPublicBaseUrl(req) {
+  const configured =
+    process.env.PUBLIC_BASE_URL ||
+    process.env.RAILWAY_PUBLIC_DOMAIN ||
+    "";
+
+  if (configured) {
+    return configured.replace(/\/+$/, "");
+  }
+
+  const protocol =
+    req.headers["x-forwarded-proto"] ||
+    req.protocol ||
+    "http";
+
+  const host =
+    req.headers["x-forwarded-host"] ||
+    req.get("host");
+
+  return `${protocol}://${host}`;
+}
+
+function enquiryText({
+  name,
+  phone,
+  requirement,
+  contactMethod,
+  language,
+  source,
+  shopName,
+  location,
+  category,
+  quantity,
+  files,
+  baseUrl
+}) {
+  const lines = [
+    "SRI BALAJI PIPES & ELECTRICALS",
+    "",
+    "New Quote / Product Enquiry",
+    "",
+    `Name: ${name}`,
+    `Shop / Company: ${shopName || "Not provided"}`,
+    `Phone: ${phone}`,
+    `Location: ${location || "Not provided"}`,
+    `Category: ${category || "Not provided"}`,
+    `Quantity: ${quantity || "Not provided"}`,
+    `Preferred contact: ${contactMethod || "Not provided"}`,
+    `Language: ${language || "English"}`,
+    `Source: ${source || "Website"}`,
+    "",
+    "Requirement:",
+    requirement,
+    "",
+    "Documents:"
+  ];
+
+  if (!files.length) {
+    lines.push("None attached");
+  } else {
+    for (const file of files) {
+      lines.push(
+        `${file.name}: ${baseUrl}${file.url}`
+      );
     }
+  }
 
-    if (!configuredMail()) {
-      return res.status(503).json({
-        ok: false, configured: false,
-        message: "Online enquiry service is not configured yet. Please use WhatsApp or SMS to send the enquiry directly."
-      });
-    }
+  return lines.join("\n");
+}
 
-    try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: Number(process.env.SMTP_PORT || 587) === 465,
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-      });
+function smtpConfigured() {
+  return Boolean(
+    process.env.SMTP_HOST &&
+      process.env.SMTP_USER &&
+      process.env.SMTP_PASS &&
+      process.env.ADMIN_EMAIL
+  );
+}
 
-      const attachments = (req.files || []).map(file => ({
-        filename: file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 120),
-        path: file.path,
-        contentType: file.mimetype
-      }));
+function createTransporter() {
+  if (!smtpConfigured()) {
+    return null;
+  }
 
-      await transporter.sendMail({
-        from: process.env.MAIL_FROM,
-        to: process.env.ADMIN_EMAIL,
-        subject: `New website quote enquiry — ${payload.name}`,
-        text: `Sri Balaji Pipes & Electricals — Website Quote Enquiry
-
-Name: ${payload.name}
-Shop/Company: ${payload.shopName || "Not specified"}
-Phone: ${payload.phone}
-Location: ${payload.location || "Not specified"}
-Category: ${payload.category || "Not specified"}
-Quantity: ${payload.quantity || "Not specified"}
-Requirement: ${payload.requirement}
-Preferred contact: ${payload.contactMethod}
-Language: ${payload.language}
-Source: ${payload.source}
-Time: ${payload.timestamp}
-Attachments: ${attachments.length}`,
-        attachments
-      });
-      return res.json({ ok: true });
-    } catch (error) {
-      console.error("Enquiry delivery failed:", error);
-      return res.status(500).json({ ok: false, configured: true, message: "We couldn't send your enquiry right now. Please use WhatsApp or call us directly." });
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure:
+      String(process.env.SMTP_PORT || "587") === "465",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
     }
   });
+}
+
+// -----------------------------------------------------------------------------
+// Enquiry API
+// -----------------------------------------------------------------------------
+
+app.post(
+  "/api/enquiry",
+  upload.array("files", MAX_FILES),
+  async (req, res) => {
+    try {
+      const {
+        name,
+        phone,
+        requirement,
+        contactMethod,
+        language,
+        source,
+        shopName,
+        location,
+        category,
+        quantity
+      } = req.body || {};
+
+      const cleanName = clean(name, 100);
+      const cleanPhone = String(phone || "")
+        .replace(/[()]/g, "")
+        .trim();
+
+      const cleanRequirement = clean(
+        requirement,
+        3000
+      );
+
+      if (
+        !cleanName ||
+        !validPhone(cleanPhone) ||
+        !cleanRequirement
+      ) {
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Please enter a valid name, Indian phone number and requirement."
+        });
+      }
+
+      const files = await saveUploadedFiles(
+        req.files || []
+      );
+
+      const baseUrl = getPublicBaseUrl(req);
+
+      const data = {
+        name: cleanName,
+        phone: cleanPhone,
+        requirement: cleanRequirement,
+        contactMethod: clean(contactMethod, 50),
+        language: clean(language, 30),
+        source: clean(source, 50),
+        shopName: clean(shopName, 150),
+        location: clean(location, 150),
+        category: clean(category, 100),
+        quantity: clean(quantity, 200),
+        files,
+        baseUrl
+      };
+
+      const message = enquiryText(data);
+
+      const transporter = createTransporter();
+
+      // -----------------------------------------------------------------------
+      // Email configured
+      // -----------------------------------------------------------------------
+
+      if (transporter) {
+        const attachments = (req.files || []).map(
+          (file) => ({
+            filename: file.originalname,
+            content: file.buffer,
+            contentType: file.mimetype
+          })
+        );
+
+        await transporter.sendMail({
+          from:
+            process.env.MAIL_FROM ||
+            process.env.SMTP_USER,
+          to: process.env.ADMIN_EMAIL,
+          subject:
+            `Sri Balaji Quote Enquiry - ${cleanName}`,
+          text: message,
+          attachments
+        });
+
+        return res.json({
+          ok: true,
+          configured: true,
+          message:
+            "Your enquiry has been sent successfully.",
+          files
+        });
+      }
+
+      // -----------------------------------------------------------------------
+      // Email not configured
+      //
+      // Files are still stored locally so that the website can prepare
+      // document links for WhatsApp/SMS.
+      // -----------------------------------------------------------------------
+
+      if (
+    source === "Website Quote WhatsApp" ||
+    source === "Website Quote SMS"
+  ) {
+    return res.json({
+      ok: true,
+      configured: false,
+      message:
+        "Files uploaded successfully. Your message is ready to share.",
+      files,
+      whatsappMessage: message
+    });
+  }
+
+  return res.json({
+        ok: false,
+        configured: false,
+        message:
+          "Online enquiry service is not configured yet. Please use WhatsApp or SMS to send the enquiry directly.",
+        files,
+        whatsappMessage: message
+      });
+    } catch (error) {
+      console.error("Enquiry error:", error);
+
+      if (error instanceof multer.MulterError) {
+        if (error.code === "LIMIT_FILE_SIZE") {
+          return res.status(400).json({
+            ok: false,
+            message:
+              "Each file must be 10 MB or smaller."
+          });
+        }
+
+        if (error.code === "LIMIT_FILE_COUNT") {
+          return res.status(400).json({
+            ok: false,
+            message:
+              "You can upload a maximum of 3 files."
+          });
+        }
+
+        return res.status(400).json({
+          ok: false,
+          message:
+            "Please use PDF, JPG or PNG files up to 10 MB each, with a maximum of 3 files."
+        });
+      }
+
+      return res.status(500).json({
+        ok: false,
+        message:
+          "We could not process your enquiry. Please use WhatsApp or call us directly."
+      });
+    }
+  }
+);
+
+// -----------------------------------------------------------------------------
+// Static uploaded quote files
+// -----------------------------------------------------------------------------
+
+app.use(
+  "/quote-files",
+  express.static(quoteFilesDir, {
+    index: false,
+    dotfiles: "deny",
+    fallthrough: false,
+    setHeaders(res) {
+      res.setHeader(
+        "X-Content-Type-Options",
+        "nosniff"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        "inline"
+      );
+    }
+  })
+);
+
+// -----------------------------------------------------------------------------
+// Static website
+// -----------------------------------------------------------------------------
+
+app.use(
+  express.static(publicDir, {
+    maxAge: "1h"
+  })
+);
+
+// -----------------------------------------------------------------------------
+// Fallback
+// -----------------------------------------------------------------------------
+
+app.get("*", (_req, res) => {
+  res.sendFile(
+    path.join(publicDir, "index.html")
+  );
 });
 
-app.use("/quote-files", express.static(quoteFilesDir, {
-  fallthrough: false,
-  index: false,
-  maxAge: "1h"
-}));
-setInterval(cleanupQuoteFiles, 60 * 60 * 1000).unref();
-cleanupQuoteFiles();
+// -----------------------------------------------------------------------------
+// Start
+// -----------------------------------------------------------------------------
 
-app.use(express.static(path.join(__dirname, "public"), { extensions: ["html"] }));
-app.get("*", (_req, res) => res.sendFile(path.join(__dirname, "public", "index.html")));
-
-app.listen(PORT, () => console.log(`Sri Balaji website running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+  console.log(
+    `Sri Balaji website running on http://localhost:${PORT}`
+  );
+});

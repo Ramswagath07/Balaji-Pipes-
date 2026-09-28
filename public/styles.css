@@ -123,3 +123,63 @@ button{cursor:pointer}
   .contact-grid,.footer-grid{grid-template-columns:1fr}.footer-grid{gap:24px}.enquiry-form{padding:19px}
 }
 @media(max-width:390px){.brand-copy{display:flex}.brand-copy strong{font-size:11px}.brand-copy small{font-size:7px}.product-grid{grid-template-columns:1fr}.hero h1{font-size:32px}}
+
+/* Contact SVG icons */
+.contact-icon {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  flex: 0 0 52px;
+}
+
+.contact-icon svg {
+  width: 28px;
+  height: 28px;
+  display: block;
+  fill: currentColor;
+}
+
+.icon-phone {
+  color: #0b2b4a;
+  background: #eaf2f8;
+}
+
+.icon-whatsapp {
+  color: #128c7e;
+  background: #e8f7f3;
+}
+
+.icon-instagram {
+  color: #c13584;
+  background: #fbeaf4;
+}
+
+.icon-instagram svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+}
+
+.icon-instagram .icon-dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+@media (max-width: 640px) {
+  .contact-icon {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    flex-basis: 46px;
+    border-radius: 12px;
+  }
+
+  .contact-icon svg {
+    width: 24px;
+    height: 24px;
+  }
+}
